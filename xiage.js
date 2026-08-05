@@ -75,12 +75,38 @@ function parseItems(html) {
 
 module.exports = {
   platform: '我要下歌',
-  version: '0.0.1',
+  version: '0.0.2',
   author: '船长',
   srcUrl: 'https://raw.githubusercontent.com/buaiwanyouxi/musicfree-xiage/main/xiage.js',
-  description: '我要下歌(xiage.yiwuku.com) 音乐插件：搜索、在线播放、歌词、最新推荐',
+  description: '我要下歌(xiage.yiwuku.com) 音乐插件：搜索、在线播放、歌词、歌单/排行榜',
   cacheControl: 'no-store',
   supportedSearchType: ['music'],
+
+  // ===== 歌单 / 排行榜（首页"最新歌曲"目录，支持分页）=====
+  // 说明：该站为 Z-Blog 静态下载站，无独立榜单接口；以首页"最新歌曲"目录作为
+  // 可浏览的歌单/排行榜集合，分页地址为 /page_N.html。
+  async getTopLists() {
+    return [
+      {
+        id: 'latest',
+        title: '最新歌曲',
+        coverImg: '',
+        _type: 'playlist',
+        _url: BASE + '/',
+      },
+    ];
+  },
+
+  async getTopListDetail(topListItem, page = 1) {
+    const url = page <= 1 ? topListItem._url : `${BASE}/page_${page}.html`;
+    const resp = await req(url);
+    const data = parseItems(resp.data);
+    const hasNext = /class="next"/.test(resp.data);
+    return {
+      isEnd: data.length === 0 || !hasNext,
+      data,
+    };
+  },
 
   // ===== 搜索（单页，无分页）=====
   async search(query, page, type) {
@@ -117,6 +143,6 @@ module.exports = {
     return { rawLrc: raw, translation: '' };
   },
 
-  // 注：本插件不实现 getTopLists / getTopListDetail，故 MusicFree 中不会显示歌单/排行榜入口，
-  // 仅保留搜索、播放、歌词三项核心能力。
+  // 歌单/排行榜已通过 getTopLists / getTopListDetail 实现（首页最新歌曲目录），
+  // 与搜索、播放、歌词共同构成插件能力。
 };
