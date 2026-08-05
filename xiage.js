@@ -117,16 +117,6 @@ module.exports = {
     return { rawLrc: raw, translation: '' };
   },
 
-  // ===== 排行榜/推荐：以首页"最新歌曲"为可浏览列表，支持分页 =====
-  async getTopLists() {
-    return [{ id: 'home', title: '最新/推荐', _url: BASE + '/' }];
-  },
-
-  async getTopListDetail(topListItem, page) {
-    const url = page <= 1 ? BASE + '/' : `${BASE}/page_${page}.html`;
-    const resp = await req(url);
-    const data = parseItems(resp.data);
-    const hasNext = resp.data.includes('class="next"');
-    return { isEnd: data.length === 0 || !hasNext, data };
-  },
+  // 注：本插件不实现 getTopLists / getTopListDetail，故 MusicFree 中不会显示歌单/排行榜入口，
+  // 仅保留搜索、播放、歌词三项核心能力。
 };
